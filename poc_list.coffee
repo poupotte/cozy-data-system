@@ -25,9 +25,14 @@ initDB = (cb) ->
             console.log 'DB recreated'
             docs = ({'type':'dumb_doc', 'num':num} for num in [0..10])
             db.save docs, ->
-                cb()
+                map = (doc) ->
+                    emit doc.num, doc
+                    return
+                view = {map:map}
+                db.save '_design/test-design', {allByNum:view}, ->
+                    cb()
 
 initDB ->
-    db.all {include_docs: true}, (err, res) ->
+    db.view 'test-design/allByNum', (err, res) ->
         console.log err if err?
         console.log JSON.stringify res, null, 4 if res?

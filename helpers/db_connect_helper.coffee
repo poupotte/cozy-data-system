@@ -14,7 +14,7 @@ setup_credentials = ->
     # credentials retrieved by environment variable
     if process.env.VCAP_SERVICES?
         env = JSON.parse process.env.VCAP_SERVICES
-        couch = env['couchdb-1.2.0'][0]['credentials']
+        couch = env['couchdb-1.2'][0]['credentials']
         credentials.hostname = couch.hostname ? 'localhost'
         credentials.host = couch.host ? '127.0.0.1'
         credentials.port = couch.port ? '5984'

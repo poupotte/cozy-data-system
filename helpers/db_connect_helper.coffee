@@ -18,7 +18,7 @@ setup_credentials = ->
         credentials.hostname = couch.hostname ? 'localhost'
         credentials.host = couch.host ? '127.0.0.1'
         credentials.port = couch.port ? '5984'
-        credentials.db = couch.db ? 'cozy'
+        credentials.db = couch.name ? 'cozy'
         if couch.username? and couch.password?
             credentials.auth = \
                     {username: couch.username, password: couch.password}

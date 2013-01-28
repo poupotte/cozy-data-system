@@ -2,7 +2,7 @@ load 'application'
 
 Client = require("request-json").JsonClient
 client = new Client("http://localhost:9102/")
-db = require('../../helpers/db_connect_helper').db_connect()
+db = require('./helpers/db_connect_helper').db_connect()
 
 before 'lock request', ->
     @lock = "#{params.id}"

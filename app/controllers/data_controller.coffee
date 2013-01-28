@@ -4,7 +4,7 @@ git = require('git-rev')
 
 Client = require("request-json").JsonClient
 client = new Client("http://localhost:5000/")
-db = require('../../helpers/db_connect_helper').db_connect()
+db = require('./helpers/db_connect_helper').db_connect()
 
 before 'lock request', ->
     @lock = "#{params.id}"

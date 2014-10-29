@@ -1,12 +1,76 @@
 fs = require 'fs'
 db = require('../helpers/db_connect_helper').db_connect()
+nodemailer = require "nodemailer"
 CryptoTools = require('./crypto_tools')
 randomString = require('./random').randomString
+timeout = null
+
+User = require './user'
+user = new User()
 
 cryptoTools = new CryptoTools()
 
 masterKey = null
 slaveKey = null
+
+sendEmail = (mailOptions, callback) ->
+    transport = nodemailer.createTransport "SMTP", {}
+    transport.sendMail mailOptions, (error, response) ->
+        transport.close()
+        callback error, response
+
+getBody = (domain) ->
+    body =  """
+        Hello,
+
+        Your Cozy has been recently restarted. For security reasons, a restart disables 
+        its ability to encrypt and decrypt your sensitive data (like your banking account credentials). 
+        As a result, some applications may not be working properly anymore.
+
+        All you need to do is login once to re-enable encryption and decryption so your applications 
+        can securely use your data again. 
+        """
+    if domain?
+        body += "Click here to login #{domain}."
+
+    body += """
+
+        Cozy Team.
+
+        P-S: If you receive this message while your signed in into your Cozy, there is probably a problem ? 
+        Let us know at contact@cozycloud.cc or in our IRC channel #cozycloud on freenode.net.
+
+        """
+    return body
+
+
+sendMail = ->
+    if timeout is null
+        timeout = setTimeout () ->
+            if not (masterKey? and slaveKey?)
+                user.getUser (err, user) ->
+                    if err
+                        logger.info "[sendMailToUser] err: #{err}"
+                        next new Error err
+                    else
+                        db.view 'cozyinstance/all', (err, instance) ->
+                            if instance?[0]?.value.domain?
+                                domain = instance[0].value.domain
+                            else
+                                domain = false
+                            mailOptions =
+                                to: user.email
+                                from: "noreply@cozycloud.cc"
+                                subject: "Your Cozy has been restarted"
+                                text: getBody(domain)
+                            sendEmail mailOptions, (error, response) ->
+                                console.log error if error?
+                            timeout = setTimeout () ->
+                                timeout = null
+                            , 3 * 24 * 60 * 60 * 1000
+            else
+                timeout = null
+        , 24 * 60 * 60 * 1000
 
 
 ## function updateKeys (oldKey,password, encryptedslaveKey, callback)
@@ -33,6 +97,7 @@ exports.encrypt = (password) ->
             newPwd = cryptoTools.encrypt slaveKey, password
             return newPwd
         else
+            sendMail()
             err = "master key and slave key don't exist"
             console.log "[encrypt]: #{err}"
             throw new Error err
@@ -55,7 +120,7 @@ exports.decrypt = (password) ->
                 newPwd = cryptoTools.decrypt slaveKey, password
             return newPwd
         else
-            ## TODOS : send mail to inform user
+            sendMail()
             err = "master key and slave key don't exist"
             console.log "[decrypt]: #{err}"
             throw new Error err
@@ -68,7 +133,7 @@ exports.decrypt = (password) ->
 ## @user {object} user
 ## @callback {function} Continuation to pass control back to when complete.
 ## Init keys at the first connection
-exports.init = (password, user, callback) ->    
+exports.init = (password, user, callback) ->
     # Generate salt and masterKey
     salt = cryptoTools.genSalt(32 - password.length)
     masterKey = cryptoTools.genHashWithSalt password, salt

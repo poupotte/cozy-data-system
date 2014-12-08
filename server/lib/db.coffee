@@ -177,6 +177,17 @@ module.exports = (callback) ->
                         }
                         """
 
+        db.get '_design/access', (err, doc) =>
+            if err and err.error is "not_found"
+                db.save '_design/access',
+                    all:
+                        map: """
+                        function(doc) {
+                            if(doc.docType && doc.docType.toLowerCase() === "access") {
+                                return emit(doc._id, doc);
+                            }
+                        }
+                        """
         db.get '_design/binary', (err, doc) =>
             if err and err.error is "not_found"
                 db.save '_design/binary',

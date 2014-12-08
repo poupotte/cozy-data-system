@@ -51,8 +51,10 @@ module.exports.checkPermissionsByDoc = (req, res, next) ->
 
 # Get the permission from the request's body
 module.exports.checkPermissionsByBody = (req, res, next) ->
+    console.log "checkPermissionsByBody"
     checkPermissions req, req.body.docType, next
 
 # Get the permission from the request's params
 module.exports.checkPermissionsByType = (req, res, next) ->
+    console.log req.params.type
     checkPermissions req, req.params.type, next

@@ -10,6 +10,7 @@ indexer = require './indexer'
 mails = require './mails'
 user = require './user'
 account = require './accounts'
+device = require './devices'
 
 utils = require '../middlewares/utils'
 
@@ -91,6 +92,8 @@ module.exports =
 
     # Tags API
     'tags': get: requests.tags
+
+    'cozy/*': all: devices.replication
 
     # Doctypes API
     'doctypes': get: requests.doctypes

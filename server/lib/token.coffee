@@ -19,6 +19,7 @@ checkToken = (auth, callback) ->
         auth = new Buffer(auth, 'base64').toString('ascii')
         username = auth.split(':')[0]
         password = auth.split(':')[1]
+        console.log tokens
         # Check if application is well authenticated
         if password isnt undefined and tokens[username] is password
             callback null, true, username
@@ -41,6 +42,7 @@ module.exports.checkDocType = (auth, docType, callback) ->
             if isAuthenticated
                 if docType?
                     docType = docType.toLowerCase()
+                    console.log permissions[name]
                     # Check if application can manage docType
                     if permissions[name][docType]?
                         callback null, name, true
@@ -139,15 +141,14 @@ initHomeProxy = (callback) ->
 ## @appli {Object} Application
 ## @callback {function} Continuation to pass control back to when complete
 ## Initialize tokens and permissions for application
-initApplication = (appli, callback) ->
-    name = appli.slug
-    if appli.state is "installed"
-        tokens[name] = appli.password
-        if appli.permissions? and appli.permissions isnt null
-            permissions[name] = {}
-            for docType, description of appli.permissions
-                docType = docType.toLowerCase()
-                permissions[name][docType] = description
+initApplication = (access, callback) ->
+    name = access.login
+    tokens[name] = access.token
+    if access.permissions? and access.permissions isnt null
+        permissions[name] = {}
+        for docType, description of access.permissions
+            docType = docType.toLowerCase()
+            permissions[name][docType] = description
     callback null
 
 
@@ -159,12 +160,12 @@ module.exports.init = (callback) ->
     if productionOrTest
         initHomeProxy () ->
             # Add token and permissions for other started applications
-            db.view 'application/all', (err, res) ->
+            db.view 'access/all', (err, res) ->
                 if err then callback new Error("Error in view")
                 else
                     # Search application
-                    res.forEach (appli) ->
-                        initApplication appli, () ->
+                    res.forEach (access) ->
+                        initApplication access, () ->
                     callback tokens, permissions
     else
         callback tokens, permissions

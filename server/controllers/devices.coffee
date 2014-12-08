@@ -4,6 +4,10 @@ db = require('../helpers/db_connect_helper').db_connect()
 request = require '../lib/request'
 default_filter = require '../lib/default_filter'
 dbHelper = require '../lib/db_remove_helper'
+utils = require '../middlewares/utils'
+{getProxy} = require '../lib/proxy'
+fs = require 'fs'
+S = require 'string'
 
 ## Helpers ##
 
@@ -13,39 +17,6 @@ randomString = (length) ->
     while (string.length < length)
         string = string + Math.random().toString(36).substr(2)
     return string.substr 0, length
-
-createFilter = (id, callback) ->
-    db.get "_design/#{id}", (err, res) ->
-        if err && err.error is 'not_found'
-            # setup the default filters (replicate Files & Folders)
-            designDoc =
-                views:
-                    filterView: map: default_filter.asView id
-                filters:
-                    filter: default_filter.get id
-                    filterDocType: default_filter.getDocType id
-
-            db.save "_design/#{id}", designDoc, (err, res) ->
-                if err
-                    console.log "[Definition] err: " + JSON.stringify err
-                    callback err.message
-                else
-                    callback null
-
-        else if err
-            callback err.message
-
-        else
-            designDoc = res.filters
-            filterFunction = default_filter.get id
-            designDoc.filter = filterFunction
-            db.merge "_design/#{id}", {filters:designDoc}, (err, res) ->
-                if err
-                    console.log "[Definition] err: " + JSON.stringify err
-                    callback err.message
-                else
-                    callback null
-
 ## Actions
 
 # POST /device
@@ -68,13 +39,10 @@ module.exports.create = (req, res, next) ->
             next err
         else
             db.save device, (err, docInfo) ->
-                # Create filter
-                createFilter docInfo._id, (err) ->
-                    if err?
-                        next new Error err
-                    else
-                        device.id = docInfo._id
-                        res.send 200, device
+                if err?
+                    next new Error err
+                else
+                    res.send 200, device
 
 # DELETE /device/:id
 module.exports.remove = (req, res, next) ->
@@ -95,3 +63,80 @@ module.exports.remove = (req, res, next) ->
                     next new Error err.error
                 else
                     send_success()
+
+getCredentialsHeader = ->
+    data = fs.readFileSync '/etc/cozy/couchdb.login'
+    lines = S(data.toString('utf8')).lines()
+    credentials = "#{lines[0]}:#{lines[1]}"
+    basicCredentials = new Buffer(credentials).toString 'base64'
+    return "Basic #{basicCredentials}"
+
+module.exports.replication = (req, res, next) ->
+    # Check permissions
+    auth = false
+    check_after = false
+    error = ""
+    if req.params?[0] is '_changes' or
+        req.params?[0] is '_local' or
+        req.params?[0].indexOf('?_nonce') isnt -1
+            auth = true
+    else
+        switch req.method
+            when 'GET'
+                auth = true
+                check_after = true
+                #console.log "test after request"
+            when 'POST'
+                #console.log "test before"
+                utils.checkPermissionsByBody req, res, (err) ->
+                    error = err
+                    auth = true if not err?
+            when 'PUT'
+                #console.log "test before"
+                utils.checkPermissionsByBody req, res, (err) ->
+                    error = err
+                    auth = true if not err?
+                check_after = true
+                #console.log "test after request"
+            when 'DELETE'
+                #console.log "test before"
+                utils.checkPermissionsByBody req, res, (err) ->
+                    error = err
+                    auth = true if not err?
+    if auth
+        current_req  = req.headers['authorization']
+        # Change couchDB authentication
+        if process.env.NODE_ENV is "production"
+            req.headers['authorization'] = getCredentialsHeader()
+        else
+            # Do not forward 'authorization' header in other environments
+            # in order to avoid wrong authentications in CouchDB
+            req.headers['authorization'] = null
+        if check_after
+            #res.writeHead = (status, reason, headers) =>
+            #    console.log status
+            res.write = (data, encoding) ->
+                json = JSON.parse data.toString('utf8')
+                if json.docType?
+                    req.params.type = json.docType
+                    req.headers["authorization"] = current_req
+                    utils.checkPermissionsByType req, res, (err) =>
+                        if err?
+                            #console.log res.headers
+                            # error : Can't set headers after they are sent.
+                            # http://stackoverflow.com/questions/22487048/node-js-http-proxy-modify-body
+
+                            # TODOS : utiliser le même principe partout ???? (à la place de utils)
+                            #console.log next
+                            next err
+                            #res.send err, 401
+                        else
+                            #next()
+                            res.end.call res, data
+                else
+                    #next()
+                    res.end.call res, data
+
+        getProxy().web req, res, target: "http://localhost:5984"
+    else
+        next error

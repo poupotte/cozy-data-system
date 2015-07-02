@@ -188,7 +188,13 @@ exports.removeOldAppView = (callback) ->
                                     count += 1
                                     console.log '  -> REMOVE (same view) // Warning : docType check'
                                 else
-                                    console.log '  -> ????'
+                                    sharedView = sharedView.replace '_', ''
+                                    appView = appView.replace '_', ''
+                                    if sharedView.toString() is appView.toString()
+                                        count += 1
+                                        console.log '  -> REMOVE (same view) // Warning : _'
+                                    else
+                                        console.log '  -> ????'
 
                         else
                             console.log 'remove : old application'

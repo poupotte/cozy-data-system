@@ -186,7 +186,7 @@ exports.removeOldAppView = (callback) ->
                                 console.log 'Warning : ___'
                             if sharedView.indexOf('.toLowerCase') isnt -1 or appView.indexOf('.toLowerCase') isnt -1 
                                 sharedView = sharedView.replace('.toLowerCase()', '').toLowerCase()
-                                appView = appView.replace('.toLowerCase()', '').toLowerCase(=)
+                                appView = appView.replace('.toLowerCase()', '').toLowerCase()
                                 console.log 'Warning : docType toLowerCase'
                             if sharedView.toString() is appView.toString()
                                 count += 1

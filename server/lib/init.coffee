@@ -192,6 +192,8 @@ exports.removeOldAppView = (callback) ->
                                 count += 1
                                 console.log '  -> REMOVE (same view)'
                             else
+                                console.log '  ->  ', sharedView
+                                console.log '  ->  ', appView
                                 console.log '  -> ????'
 
                         else

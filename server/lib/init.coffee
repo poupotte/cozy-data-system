@@ -134,3 +134,66 @@ exports.removeDocWithoutDocType = (callback) ->
                     log.error err if err
                     cb()
             , callback
+
+exports.removeOldAppView = (callback) ->
+    count = 0
+    total = 0
+    db.view 'application/all', (err, docs) ->
+        return callback err if err
+        apps = docs.map (app) -> return app.slug
+        apps.push 'home'
+        apps.push 'proxy'
+        console.log apps
+        db.all {startkey:"_design", endkey:"_design0", include_docs:true}, (err, designDocs) ->
+            async.forEachSeries designDocs, (designDoc, next) =>
+                designDoc = designDoc.doc
+                console.log '\n'
+                async.forEachSeries Object.keys(designDoc.views), (type, cb) =>
+                    total += 1
+                    console.log designDoc._id, type
+                    if type is 'all' 
+                        console.log '  -> REMOVE (all views)'
+                        count +=1
+                    else if type.indexOf('-') isnt -1
+                        console.log '  -> specific view for application'
+                        if type.split('-')[0] in apps
+                            console.log '  -> check similarity with other'
+                            sharedView = designDoc.views[type.split('-')[1]].map.toString()
+                            appView = designDoc.views[type].map.toString()
+                            if appView.indexOf 'filter' isnt -1
+                                appView = appView.replace 'filter = function (doc) {\n', ''
+                                appView = appView.replace '};\n    filter(doc);\n', ''
+                            if sharedView.indexOf 'filter(doc)' isnt -1
+                                sharedView = sharedView.replace 'filter = function (doc) {\n', ''
+                                sharedView = sharedView.replace '};\n    filter(doc);\n', ''
+                            appView = appView.replace /\ /g, ''
+                            appView = appView.replace /\n/g, ''
+                            sharedView = sharedView.replace /\ /g, ''
+                            sharedView = sharedView.replace /\n/g, ''
+                            console.log '  -> shared     : ', sharedView
+                            console.log '  -> application: ', appView
+                            if sharedView.toString() is appView.toString()
+                                count += 1
+                                console.log '  -> REMOVE (same view)'
+                            else
+                                sharedView = sharedView.replace 'doc.docType&&', ''
+                                appView = appView.replace 'doc.docType&&', ''
+                                if sharedView.toString() is appView.toString()
+                                    count += 1
+                                    console.log '  -> REMOVE (same view) // Warning : docType check'
+                                else
+                                    console.log '  -> ????'
+
+                        else
+                            console.log 'remove : old application'
+                            count +=1
+                    else
+                        console.log '   -> OK'
+                    cb()
+                , next
+            , () ->
+                console.log 'END'
+                console.log "#{count}/#{total}"
+
+
+#removeOldView = (callback) ->

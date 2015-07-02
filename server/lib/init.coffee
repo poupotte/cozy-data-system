@@ -176,25 +176,23 @@ exports.removeOldAppView = (callback) ->
                             appView = appView.replace /\n/g, ''
                             sharedView = sharedView.replace /\ /g, ''
                             sharedView = sharedView.replace /\n/g, ''
+                            if sharedView.indexOf('doc.docType&&') isnt -1 or appView.indexOf('doc.docType&&') isnt -1 
+                                sharedView = sharedView.replace 'doc.docType&&', ''
+                                appView = appView.replace 'doc.docType&&', ''
+                                console.log 'Warning : docType check'
+                            if sharedView.indexOf('_') isnt -1 or appView.indexOf('_') isnt -1
+                                sharedView = sharedView.replace /_/g, ''
+                                appView = appView.replace /_/g, ''
+                                console.log 'Warning : ___'
+                            if sharedView.indexOf('.toLowerCase') isnt -1 or appView.indexOf('.toLowerCase') isnt -1 
+                                sharedView = sharedView.replace('.toLowerCase()', '').toLowerCase()
+                                appView = appView.replace('.toLowerCase()', '').toLowerCase(=)
+                                console.log 'Warning : docType toLowerCase'
                             if sharedView.toString() is appView.toString()
                                 count += 1
                                 console.log '  -> REMOVE (same view)'
                             else
-                                sharedView = sharedView.replace 'doc.docType&&', ''
-                                appView = appView.replace 'doc.docType&&', ''
-                                if sharedView.toString() is appView.toString()
-                                    count += 1
-                                    console.log '  -> REMOVE (same view) // Warning : docType check'
-                                else
-                                    sharedView = sharedView.replace /_/g, ''
-                                    appView = appView.replace /_/g, ''
-                                    console.log '  -> shared     : ', sharedView
-                                    console.log '  -> application: ', appView
-                                    if sharedView.toString() is appView.toString()
-                                        count += 1
-                                        console.log '  -> REMOVE (same view) // Warning : _'
-                                    else
-                                        console.log '  -> ????'
+                                console.log '  -> ????'
 
                         else
                             console.log 'remove : old application'

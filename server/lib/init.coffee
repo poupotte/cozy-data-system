@@ -176,8 +176,6 @@ exports.removeOldAppView = (callback) ->
                             appView = appView.replace /\n/g, ''
                             sharedView = sharedView.replace /\ /g, ''
                             sharedView = sharedView.replace /\n/g, ''
-                            console.log '  -> shared     : ', sharedView
-                            console.log '  -> application: ', appView
                             if sharedView.toString() is appView.toString()
                                 count += 1
                                 console.log '  -> REMOVE (same view)'
@@ -190,6 +188,8 @@ exports.removeOldAppView = (callback) ->
                                 else
                                     sharedView = sharedView.replace '_', ''
                                     appView = appView.replace '_', ''
+                                    console.log '  -> shared     : ', sharedView
+                                    console.log '  -> application: ', appView
                                     if sharedView.toString() is appView.toString()
                                         count += 1
                                         console.log '  -> REMOVE (same view) // Warning : _'

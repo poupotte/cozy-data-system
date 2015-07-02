@@ -136,6 +136,12 @@ exports.removeDocWithoutDocType = (callback) ->
             , callback
 
 exports.removeOldAppView = (callback) ->
+    # TODOS : Remove old device view
+    # TODOS : dball ????
+    # TODOS : all : check emit(doc._id, doc) => bloquer les autres
+    # TODOS : docType toLowerCase / doc.docType&&
+    # TODOS : on peut merger celle qui sont map/reduce & map seul, si on ajoute le paramètre ?reduce=false
+    # TODOS : _ref vs ref
     count = 0
     total = 0
     db.view 'application/all', (err, docs) ->
@@ -151,7 +157,7 @@ exports.removeOldAppView = (callback) ->
                 async.forEachSeries Object.keys(designDoc.views), (type, cb) =>
                     total += 1
                     console.log designDoc._id, type
-                    if type is 'all' 
+                    if type is 'all' or type is 'dball'
                         console.log '  -> REMOVE (all views)'
                         count +=1
                     else if type.indexOf('-') isnt -1

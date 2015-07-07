@@ -451,17 +451,11 @@ exports.removeOldAppViews = (callback) ->
         db.all {startkey:"_design", endkey:"_design0", include_docs:true}, (err, designDocs) ->
             async.forEachSeries designDocs, (designDoc, next) =>
                 designDoc = designDoc.doc
-                console.log '\n', designDoc._id
                 async.forEachSeries Object.keys(designDoc.views), (type, cb) =>
                     total += 1
-                    console.log ' ->', type
                     docType = designDoc._id.replace('_design/', '')
-                    console.log type, docType
                     if views[docType]?[type]?
-                        console.log views[docType][type]
-                        if appIsInstalled views[docType][type], apps
-                            console.log 'OK -> '
-                        else
+                        unless appIsInstalled views[docType][type], apps
                             console.log 'FALSE -> '
                             remove += 1
                             toRemove += 1
@@ -492,6 +486,8 @@ exports.removeOldAppViews = (callback) ->
                                         toRemove += 1
                                         mount += 1
                             else
+                                console.log type, docType
+                                console.log views[docType][type]
                                 console.log 'UNKONWN'
                                 count += 1
                                 mount += 1

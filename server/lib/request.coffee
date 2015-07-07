@@ -390,7 +390,8 @@ exports.removeOldAppViews = (callback) ->
     total = 0
     all = 0
     remove = 0
-    duplicate = 0
+    duplicateUninstalled = 0
+    duplicateInstalled = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
         return callback err if err
@@ -418,7 +419,10 @@ exports.removeOldAppViews = (callback) ->
                             all += 1
                         else
                             if type.split('-').length > 1
-                                duplicate += 1
+                                if appIsInstalled [type.split('-')[0]], apps
+                                    duplicateInstalled += 1
+                                else
+                                    duplicateUninstalled += 1
                             else
                                 console.log 'UNKONWN'
                                 count += 1
@@ -428,7 +432,8 @@ exports.removeOldAppViews = (callback) ->
                 console.log apps
                 console.log 'END'
                 console.log 'all/dball: ', all
-                console.log 'duplicate: ', duplicate
+                console.log 'duplicateInstalled: ', duplicateInstalled
+                console.log 'duplicateUninstalled: ', duplicateUninstalled
                 console.log 'remove: ', remove
                 console.log 'unknown: ', count
                 console.log "total: ", total

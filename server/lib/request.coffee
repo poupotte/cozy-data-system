@@ -440,6 +440,8 @@ exports.removeOldAppViews = (callback) ->
     duplicateUninstalled = 0
     count_similare = 0
     duplicateInstalled = 0
+    toRemove = 0
+    mount = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
         return callback err if err
@@ -462,13 +464,19 @@ exports.removeOldAppViews = (callback) ->
                         else
                             console.log 'FALSE -> '
                             remove += 1
+                            toRemove += 1
+                            mount += 1
                     else
                         if type is 'all' or type is 'dball'
                             all += 1
+                            toRemove += 1
+                            mount += 1
                         else
                             if type.split('-').length > 1
                                 if type.split('-')[1] is 'all'
                                     all += 1
+                                    toRemove += 1
+                                    mount += 1
                                 else
                                     if appIsInstalled [type.split('-')[0]], apps
                                         duplicateInstalled += 1
@@ -477,16 +485,19 @@ exports.removeOldAppViews = (callback) ->
                                         [similare, warning] = isSimilare sharedView, appView
                                         if similare
                                             count_similare += 1
+                                            toRemove += 1
+                                            mount += 1
                                     else
                                         duplicateUninstalled += 1
+                                        toRemove += 1
+                                        mount += 1
                             else
                                 console.log 'UNKONWN'
                                 count += 1
+                                mount += 1
                     cb()
                 , next
             , () ->
-                toRemove = all + count_similare + remove
-                mount =  all + count_similare + remove + unknown
                 console.log apps
                 console.log 'END'
                 console.log 'all/dball: ', all

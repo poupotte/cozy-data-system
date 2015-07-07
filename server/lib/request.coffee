@@ -456,7 +456,6 @@ exports.removeOldAppViews = (callback) ->
                     docType = designDoc._id.replace('_design/', '')
                     if views[docType]?[type]?
                         unless appIsInstalled views[docType][type], apps
-                            console.log 'FALSE -> '
                             remove += 1
                             toRemove += 1
                             mount += 1

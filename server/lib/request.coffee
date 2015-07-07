@@ -438,7 +438,7 @@ exports.removeOldAppViews = (callback) ->
     all = 0
     remove = 0
     duplicateUninstalled = 0
-    similare = 0
+    count_similare = 0
     duplicateInstalled = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
@@ -476,7 +476,7 @@ exports.removeOldAppViews = (callback) ->
                                         appView = designDoc.views[type].map.toString()
                                         [similare, warning] = isSimilare sharedView, appView
                                         if similare
-                                            similare += 1
+                                            count_similare += 1
                                     else
                                         duplicateUninstalled += 1
                             else
@@ -490,7 +490,7 @@ exports.removeOldAppViews = (callback) ->
                 console.log 'all/dball: ', all
                 console.log 'duplicateUninstalled: ', duplicateUninstalled
                 console.log 'duplicateInstalled: ', duplicateInstalled
-                console.log 'similare', similare
+                console.log 'similare', count_similare
                 console.log 'remove: ', remove
                 console.log 'unknown: ', count
                 console.log "total: ", total

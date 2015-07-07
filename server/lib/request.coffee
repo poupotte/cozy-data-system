@@ -348,8 +348,6 @@ isSimilare = (sharedView, appView) ->
     if sharedView.toString() is appView.toString()
         return [true, warning]
     else
-        console.log '  ->  ', sharedView
-        console.log '  ->  ', appView
         return [false, null]
 
 exports.removeOldViews = (callback) ->
@@ -487,11 +485,7 @@ exports.removeOldAppViews = (callback) ->
                                             toRemove += 1
                                             mount += 1
                                         else
-                                            console.log type, docType
                                             if views[docType]?[type.split('-')[1]]?
-                                                console.log views[docType][type.split('-')[1]]
-                                                console.log views[docType]
-                                                console.log docType, type.split('-')[1]
                                                 if views[docType][type.split('-')[1]].length is 1
                                                     keep_app +=1
                                                     toRemove += 1

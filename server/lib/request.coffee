@@ -423,7 +423,7 @@ exports.removeOldViews = (callback) ->
                 console.log "#{count}/#{total}"
 
 appIsInstalled = (currentApps, apps, count=0) ->
-    if currentApps.length < count
+    if currentApps.length > count
         app = currentApps[count]
         if app in apps
             return true

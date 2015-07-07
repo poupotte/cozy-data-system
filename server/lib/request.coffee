@@ -486,7 +486,6 @@ exports.removeOldAppViews = (callback) ->
                                         mount += 1
                             else
                                 console.log type, docType
-                                console.log views[docType][type]
                                 console.log 'UNKONWN'
                                 count += 1
                                 mount += 1

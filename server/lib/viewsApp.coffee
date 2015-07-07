@@ -128,6 +128,7 @@ exports.views =
         "nbbyday": ["kyou"]
     "sleep":
         "nbbyday": ["kyou"]
+        "bydate": ["konnectors"]
     "step":
         "bydate": ["konnectors"]
     "steps":

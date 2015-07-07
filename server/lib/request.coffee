@@ -442,6 +442,7 @@ exports.removeOldAppViews = (callback) ->
     mount = 0
     filter = 0
     keep_app = 0
+    lowerCase = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
         return callback err if err
@@ -490,14 +491,16 @@ exports.removeOldAppViews = (callback) ->
                                                     keep_app +=1
                                                     toRemove += 1
                                                     mount += 1
-                                                    console.log 'KEEP specific view : not shared'
                                     else
                                         duplicateUninstalled += 1
                                         toRemove += 1
                                         mount += 1
                             else
-                                console.log type, docType
-                                console.log 'UNKONWN'
+                                if type.toLowerCase() isnt type
+                                    lowerCase += 1
+                                    toRemove += 1
+                                    mount += 1
+                                console.log 'UNKONWN', type, docType
                                 count += 1
                                 mount += 1
                     cb()
@@ -512,7 +515,8 @@ exports.removeOldAppViews = (callback) ->
                 console.log 'duplicate not shared: ', keep_app
                 console.log 'similare', count_similare
                 console.log 'oldApp: ', remove
+                console.log 'lowerCase', lowerCase
                 console.log 'unknown: ', count
-                console.log "to remove: (all + duplicateUninstalled + not_shared + similar + oldApp) ", toRemove
+                console.log "to remove: (all + duplicateUninstalled + not_shared + similar + oldApp + lowerCase) ", toRemove
                 console.log "to remove with unknown: ", mount
                 console.log "total: ", total

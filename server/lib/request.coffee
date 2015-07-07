@@ -491,6 +491,8 @@ exports.removeOldAppViews = (callback) ->
                 console.log 'duplicateUninstalled: ', duplicateUninstalled
                 console.log 'duplicateInstalled: ', duplicateInstalled
                 console.log 'similare', count_similare
-                console.log 'remove: ', remove
+                console.log 'oldApp: ', remove
                 console.log 'unknown: ', count
+                toRemove = all + count_similare + remove
+                console.log "to remove: ", toRemove
                 console.log "total: ", total

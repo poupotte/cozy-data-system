@@ -429,9 +429,12 @@ exports.removeOldAppViews = (callback) ->
                 console.log 'END'
                 console.log 'all/dball: ', all
                 console.log 'duplicate: ', duplicate
-                console.log '---', all + duplicate
+                mount1 = all + duplicate
+                console.log '---', mount1
                 console.log 'remove: ', remove
-                console.log '---', all + duplicate + remove
+                mount2 = mount1 + remove
+                console.log '---', mount2
                 console.log 'unknown: ', count
-                console.log '---', all + duplicate + remove + unknown
+                mount3 = mount2 + unknown
+                console.log '---', mount3
                 console.log "total: ", total

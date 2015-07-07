@@ -1,5 +1,3 @@
-# TODOS : Ajouter le stack (DS)
-
 exports.views =
     "access":
         "byapp": ["ds"]
@@ -38,12 +36,22 @@ exports.views =
         "allbybankaccountanddate": ["kresus"]
         "allbycategory": ["kresus"]
         "alllike": ["kresus"]
+        "allopsbyday": ["kyou"]
+        "nbbyday": ["kyou"]
     "binary":
         "bydoc": ["ds"]
     "bookmark":
         "bydate": ["quickmarks"]
+    "bloodpressure":
+        "bydate": ["konnectors"]
+        "nbbyday": ["kyou"]
     "city":
         "bydate" : ["own"]
+    "codebill":
+        "bydate": ["konnectors"]
+    "commit":
+        "bydate": ["konnectors"]
+        "nbbyday": ["kyou"]
     "contact":
         "byname": ["contact"]
         "mailbyemail" : ["emails"]
@@ -66,6 +74,7 @@ exports.views =
         "tags": ["calendar", "sync"]
         "bycalendar": ["calendar", "sync"]
         "byuri": ["sync"]
+        "nbbyday": ["kyou"]
     "favorite_tag":
         "allbyapp": ["tasky"]
         "byappbylabel": ["tasky"]
@@ -82,6 +91,10 @@ exports.views =
         "bytag": ["files"]
         "byfolder": ["files"]
         "byfullpath": ["files", "konnectors"]
+    "heartbeat":
+        "bydate": ["konnectors"]
+    "internetbill":
+        "bydate": ["konnectors"]
     "mailbox":
         "treemap": ["emails"]
     "message":
@@ -105,9 +118,21 @@ exports.views =
     "permissions":
         "bykey": ["remotestorage"]
         "bysame": ["remotestorage"]
+    "phonebill":
+        "bydate": ["konnectors"]
     "photo":
         "byalbum": ["photos"]
         "albumphotos": ["photos"]
+    "rescuetimeactivity":
+        "bydate": ["konnectors"]
+        "nbbyday": ["kyou"]
+    "sleep":
+        "nbbyday": ["kyou"]
+    "step":
+        "bydate": ["konnectors"]
+    "steps":
+        "bydate": ["konnectors"]
+        "nbbyday": ["kyou"]
     "tag":
         "byname": ["calendar", "contact", "sync"]
     "tags":
@@ -120,9 +145,12 @@ exports.views =
         "archivetag": ["todos"]
         "todostag": ["todos"]
         "tags": ["todos"]
+        "nbbyday": ["kyou"]
     "tasky":
         "byarchivestate": ["tasky"]
         "byorder": ["tasky"]
+    "temperature":
+        "bydate": ["konnectors"]
     "track":
         "byplaylist": ["cozic"]
     "tracker":
@@ -132,5 +160,11 @@ exports.views =
         "byday": ["kyou"]
     "tree":
         "bytype": ["notes", "todos"]
+    "twittertweet":
+        "bydate": ["konnectors"]
+        "nbbyday": ["kyou"]
+    "weight":
+        "bydate": ["konnectors"]
+        "nbbyday": ["kyou"]
     "zfparam":
         "byname": ["zero-feeds"]

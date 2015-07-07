@@ -297,13 +297,60 @@ module.exports.init = (callback) =>
         else
             callback null
 
-removeOldView = (designDoc, view, callback) ->
+removeOldView = (designDoc, view) ->
     delete designDoc.views[view]
     if Object.keys(designDoc.views).length is 0
         db.remove designDoc._id, designDoc._rev, callback
     else
         db.merge designDoc._id, views: designDoc.views, callback
 
+isSimilare = (sharedView, appView) ->
+    warning = 2
+
+    if appView.indexOf 'filter' isnt -1
+        appView = appView.replace 'filter = function (doc) {\n', ''
+        appView = appView.replace '};\n    filter(doc);\n', ''
+    if sharedView.indexOf 'filter(doc)' isnt -1
+        sharedView = sharedView.replace 'filter = function (doc) {\n', ''
+        sharedView = sharedView.replace '};\n    filter(doc);\n', ''
+    appView = appView.replace /\ /g, ''
+    appView = appView.replace /\n/g, ''
+    sharedView = sharedView.replace /\ /g, ''
+    sharedView = sharedView.replace /\n/g, ''
+
+    # Check docType
+    if sharedView.indexOf('doc.docType&&') isnt -1
+        sharedView = sharedView.replace 'doc.docType&&', ''
+        warning = 1
+    if appView.indexOf('doc.docType&&') isnt -1
+        appView = appView.replace 'doc.docType&&', ''
+        warning = 2
+
+    # Use _ for temporary variables
+    if sharedView.indexOf('_') isnt -1
+        sharedView = sharedView.replace /_/g, ''
+
+    if appView.indexOf('_') isnt -1
+        appView = appView.replace /_/g, ''
+
+    # Check lowerCase docType
+    if sharedView.indexOf('.toLowerCase') isnt -1
+        sharedView = sharedView.replace('.toLowerCase()', '').toLowerCase()
+        appView = appView.toLowerCase()
+        warning = 1
+
+    if appView.indexOf('.toLowerCase') isnt -1
+        appView = appView.replace('.toLowerCase()', '').toLowerCase()
+        sharedView = sharedView.toLowerCase()
+        warning = 2
+
+    # Compare two views
+    if sharedView.toString() is appView.toString()
+        return [true, warning]
+    else
+        console.log '  ->  ', sharedView
+        console.log '  ->  ', appView
+        return [false, null]
 
 exports.removeOldViews = (callback) ->
     # TODOS : Remove old device view
@@ -391,6 +438,7 @@ exports.removeOldAppViews = (callback) ->
     all = 0
     remove = 0
     duplicateUninstalled = 0
+    similare = 0
     duplicateInstalled = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
@@ -419,10 +467,18 @@ exports.removeOldAppViews = (callback) ->
                             all += 1
                         else
                             if type.split('-').length > 1
-                                if appIsInstalled [type.split('-')[0]], apps
-                                    duplicateInstalled += 1
+                                if type.split('-')[1] is 'all'
+                                    all += 1
                                 else
-                                    duplicateUninstalled += 1
+                                    if appIsInstalled [type.split('-')[0]], apps
+                                        duplicateInstalled += 1
+                                        sharedView = designDoc.views[type.split('-')[1]].map.toString()
+                                        appView = designDoc.views[type].map.toString()
+                                        [similare, warning] = isSimilare sharedView, appView
+                                        if similare
+                                            similare += 1
+                                    else
+                                        duplicateUninstalled += 1
                             else
                                 console.log 'UNKONWN'
                                 count += 1
@@ -432,8 +488,9 @@ exports.removeOldAppViews = (callback) ->
                 console.log apps
                 console.log 'END'
                 console.log 'all/dball: ', all
-                console.log 'duplicateInstalled: ', duplicateInstalled
                 console.log 'duplicateUninstalled: ', duplicateUninstalled
+                console.log 'duplicateInstalled: ', duplicateInstalled
+                console.log 'similare', similare
                 console.log 'remove: ', remove
                 console.log 'unknown: ', count
                 console.log "total: ", total

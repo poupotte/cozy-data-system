@@ -422,13 +422,13 @@ exports.removeOldViews = (callback) ->
                 console.log 'END'
                 console.log "#{count}/#{total}"
 
-appIsInstalled = (currentApps, apps) ->
-    if currentApps.length > 0
-        app = currentApps.pop()
+appIsInstalled = (currentApps, apps, count=0) ->
+    if currentApps.length < count
+        app = currentApps[count]
         if app in apps
             return true
         else
-            return appIsInstalled currentApps, apps
+            return appIsInstalled currentApps, apps, count + 1
     else
         return false
 
@@ -456,8 +456,7 @@ exports.removeOldAppViews = (callback) ->
                     total += 1
                     docType = designDoc._id.replace('_design/', '')
                     if views[docType]?[type]?
-                        currentApps = views[docType][type]
-                        unless appIsInstalled currentApps, apps
+                        unless appIsInstalled views[docType][type], apps
                             remove += 1
                             toRemove += 1
                             mount += 1

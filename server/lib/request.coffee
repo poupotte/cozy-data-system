@@ -501,7 +501,7 @@ exports.removeOldAppViews = (callback) ->
                                     toRemove += 1
                                     mount += 1
                                 else
-                                    console.log type, docType
+                                    console.log docType, type
                                     count += 1
                                     mount += 1
                     cb()

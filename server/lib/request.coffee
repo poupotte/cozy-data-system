@@ -443,6 +443,7 @@ exports.removeOldAppViews = (callback) ->
     toRemove = 0
     mount = 0
     filter = 0
+    keep_app = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
         return callback err if err
@@ -492,6 +493,7 @@ exports.removeOldAppViews = (callback) ->
                                                 console.log views[docType]
                                                 console.log docType, type.split('-')[1]
                                                 if views[docType][type.split('-')[1]].length is 1
+                                                    keep_app +=1
                                                     console.log 'KEEP specific view : not shared'
                                     else
                                         duplicateUninstalled += 1
@@ -511,6 +513,7 @@ exports.removeOldAppViews = (callback) ->
                 console.log 'filter: ', filter
                 console.log 'duplicateUninstalled: ', duplicateUninstalled
                 console.log 'duplicateInstalled: ', duplicateInstalled
+                console.log 'duplicate not shared: ', keep_app
                 console.log 'similare', count_similare
                 console.log 'oldApp: ', remove
                 console.log 'unknown: ', count

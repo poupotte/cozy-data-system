@@ -442,6 +442,7 @@ exports.removeOldAppViews = (callback) ->
     duplicateInstalled = 0
     toRemove = 0
     mount = 0
+    filter = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
         return callback err if err
@@ -462,6 +463,10 @@ exports.removeOldAppViews = (callback) ->
                     else
                         if type is 'all' or type is 'dball'
                             all += 1
+                            toRemove += 1
+                            mount += 1
+                        else if type is 'filterView'
+                            filter +=1
                             toRemove += 1
                             mount += 1
                         else
@@ -495,6 +500,7 @@ exports.removeOldAppViews = (callback) ->
                 console.log apps
                 console.log 'END'
                 console.log 'all/dball: ', all
+                console.log 'filter: ', filter
                 console.log 'duplicateUninstalled: ', duplicateUninstalled
                 console.log 'duplicateInstalled: ', duplicateInstalled
                 console.log 'similare', count_similare

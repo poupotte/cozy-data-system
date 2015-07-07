@@ -38,6 +38,27 @@ switch  process.argv[2]
             console.log "App created"
             process.exit 0
 
+    when 'clean-views'
+        request = require './server/lib/request'
+        request.removeOldViews (err) ->
+            if err
+                console.log "An error occured"
+                console.log err.stack or err
+                process.exit 1
+            else
+                process.exit 0
+
+
+    when 'clean-app-views'
+        request = require './server/lib/request'
+        request.removeOldAppViews (err) ->
+            if err
+                console.log "An error occured"
+                console.log err.stack or err
+                process.exit 1
+            else
+                process.exit 0
+
     when 'cleanup-db'
         helpers   = require './test/helpers'
         db_helper = require './helpers/db_connect_helper'

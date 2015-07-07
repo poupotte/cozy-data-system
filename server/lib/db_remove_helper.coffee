@@ -20,7 +20,14 @@ exports.remove = (doc, callback) =>
 
 # Take advantage of bulk update to delete a batch of docs.
 exports.removeAll = (docs, callback) =>
+    console.log docs
     deletedDocs = []
-    deletedDocs.push getDeletedDoc doc.value for doc in docs
+    for doc in docs
+        if doc.doc?
+            doc = doc.doc
+        else
+            doc = doc.value
+        console.log doc
+        deletedDocs.push getDeletedDoc doc
 
     db.save deletedDocs, callback

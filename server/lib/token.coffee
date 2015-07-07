@@ -1,5 +1,6 @@
 db = require('../helpers/db_connect_helper').db_connect()
 fs = require 'fs'
+request = require './request'
 permissions = {}
 tokens = {}
 
@@ -165,7 +166,7 @@ addAccess = module.exports.addAccess = (doc, callback) ->
 ## @callback {function} Continuation to pass control back to when complete.
 ## Update access for application or device
 module.exports.updateAccess = (id, doc, callback) ->
-    db.view 'access/byApp', key:id, (err, accesses) ->
+    db.view 'access/byapp', key:id, (err, accesses) ->
         if accesses.length > 0
             access = accesses[0].value
             # Delete old access
@@ -188,7 +189,7 @@ module.exports.updateAccess = (id, doc, callback) ->
 ## @callback {function} Continuation to pass control back to when complete.
 ## Remove access for application or device
 module.exports.removeAccess = (doc, callback) ->
-    db.view 'access/byApp', key:doc._id, (err, accesses) ->
+    db.view 'access/byapp', key:doc._id, (err, accesses) ->
         return callback err if err? and callback?
         if accesses.length > 0
             access = accesses[0].value
@@ -265,7 +266,7 @@ module.exports.init = (callback) ->
     if productionOrTest
         initHomeProxy () ->
             # Add token and permissions for other started applications
-            db.view 'access/all', (err, accesses) ->
+            request.viewAll 'access', (err, accesses) ->
                 return callback new Error("Error in view") if err?
                 # Search application
                 accesses.forEach (access) ->

@@ -6,8 +6,7 @@ module.exports = (app, server, callback) ->
     feed.initialize server
 
     init = require './lib/init'
-    init.removeOldAppView()
-    ###init.removeDocWithoutDocType (err) ->
+    init.removeDocWithoutDocType (err) ->
         log.error err if err?
         init.removeLostBinaries (err) ->
             log.error err if err?
@@ -16,4 +15,4 @@ module.exports = (app, server, callback) ->
                 # Patch: 24/03/15
                 init.addAccesses (err) ->
                     log.error err if err?
-            callback app, server if callback?###
+            callback app, server if callback?

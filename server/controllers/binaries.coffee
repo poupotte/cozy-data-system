@@ -133,7 +133,7 @@ module.exports.remove = (req, res, next) ->
         # Save updated doc
         db.save req.doc, (err) ->
             # Check if binary is used by another document
-            db.view 'binary/byDoc', {key: id}, (err, result) =>
+            db.view 'binary/bydoc', {key: id}, (err, result) =>
                 if result.length isnt 0
                     res.send 204, success: true
                     return next()

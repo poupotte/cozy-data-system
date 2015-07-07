@@ -5,7 +5,7 @@ logger = require('printit')
     prefix: 'controllers:mails'
 db = require('../helpers/db_connect_helper').db_connect()
 User = require '../lib/user'
-
+request = require '../lib/request'
 
 user = new User()
 
@@ -123,9 +123,8 @@ module.exports.sendFromUser = (req, res, next) ->
         next err
 
     else
-
-        db.view 'cozyinstance/all', (err, instance) ->
-            db.view 'user/all', (err, users) ->
+        request.viewAll 'cozyinstance', (err, instance) ->
+            request.viewAll 'user', (err, users) ->
                 if instance?[0]?.value.domain?
                     domain = instance[0].value.domain
                     if domain.indexOf('https://') isnt -1

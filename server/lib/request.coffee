@@ -15,6 +15,15 @@ randomString = (length) ->
 productionOrTest = process.env.NODE_ENV is "production" or
     process.env.NODE_ENV is "test"
 
+
+module.exports.viewAll = viewAll = (docType, cb) ->
+    options =
+        startkey: docType
+        endkey: docType
+        include_docs: true
+        reduce: false
+    db.view 'all/bydoctype', options, cb
+
 ## function create (app, req, views, newView, callback)
 ## @app {String} application name
 ## @req {Object} contains type and request name
@@ -57,8 +66,13 @@ module.exports.create = (app, req, views, newView, callback) =>
 ## @callback {function} Continuation to pass control back to when complete.
 ## Callback correct request name
 module.exports.get = (app, req, callback) =>
-    if productionOrTest and request[app]?["#{req.type}/#{req.req_name}"]?
-        callback request[app]["#{req.type}/#{req.req_name}"]
+    if req.req_name is 'all'
+        callback "byDocType"
+    else if productionOrTest
+        if request[app]?["#{req.type}/#{req.req_name}"]?
+            callback request[app]["#{req.type}/#{req.req_name}"]
+        else
+            callback "#{req.req_name}"
     else
         callback "#{req.req_name}"
 
@@ -70,7 +84,7 @@ module.exports.get = (app, req, callback) =>
 ## Callback all application names from database
 recoverApp = (callback) =>
     apps = []
-    db.view 'application/all', (err, res) =>
+    viewAll 'application', (err, res) =>
         if err
             callback err
         else if not res
@@ -109,33 +123,32 @@ recoverDesignDocs = (callback) =>
 # Data system uses some views, this function initialize it.
 initializeDSView = (callback) ->
     views =
-        # Usefull for function 'doctypes' (controller/request. Databrowser)
-        doctypes:
-            all:
-                map: """
-                function(doc) {
-                    if(doc.docType) {
-                        return emit(doc.docType, null);
+        all:
+            bydoctype: 
+                map:"""
+                    function(doc) {
+                        if(doc.docType) {
+                            return emit(doc.docType.toLowerCase(), doc._id)
+                        }
                     }
-                }
-                """
+                    """
                 # use to make a "distinct"
                 reduce: """
                 function(key, values) {
                     return true;
                 }
                 """
-        # Usefull to manage device access
-        device:
-            all:
+            withoutdoctype:
                 map: """
                 function(doc) {
-                    if(doc.docType && doc.docType.toLowerCase() === "device") {
+                    if (!doc.docType) {
                         return emit(doc._id, doc);
                     }
                 }
                 """
-            byLogin:
+        # Usefull to manage device access
+        device:
+            bylogin:
                 map: """
                 function (doc) {
                     if(doc.docType && doc.docType.toLowerCase() === "device") {
@@ -145,15 +158,6 @@ initializeDSView = (callback) ->
                 """
         # Usefull to manage application access
         application:
-            all:
-                map: """
-                function(doc) {
-                    if(doc.docType && doc.docType.toLowerCase() === "application") {
-                        return emit(doc._id, doc);
-                    }
-                }
-                """
-
             byslug:
                 map: """
                 function(doc) {
@@ -162,29 +166,9 @@ initializeDSView = (callback) ->
                     }
                 }
                 """
-
-        # Usefull to manage application access
-        withoutDocType:
-            all:
-                map: """
-                function(doc) {
-                    if (!doc.docType) {
-                        return emit(doc._id, doc);
-                    }
-                }
-                """
-
         # Usefull to manage access
         access:
-            all:
-                map: """
-                function(doc) {
-                    if(doc.docType && doc.docType.toLowerCase() === "access") {
-                        return emit(doc._id, doc);
-                    }
-                }
-                """
-            byApp:
+            byapp:
                 map: """
                 function(doc) {
                     if(doc.docType && doc.docType.toLowerCase() === "access") {
@@ -195,15 +179,7 @@ initializeDSView = (callback) ->
 
         # Usefull to remove binary lost
         binary:
-            all:
-                map: """
-                function(doc) {
-                    if(doc.docType && doc.docType.toLowerCase() === "binary") {
-                        emit(doc._id, null);
-                    }
-                }
-                """
-            byDoc:
+            bydoc:
                 map: """
                 function(doc) {
                     if(doc.binary) {
@@ -215,7 +191,7 @@ initializeDSView = (callback) ->
                 """
         # Usefull for thumbs creation
         file:
-            withoutThumb:
+            withoutthumb:
                 map: """
                 function(doc) {
                     if(doc.docType && doc.docType.toLowerCase() === "file") {
@@ -227,7 +203,7 @@ initializeDSView = (callback) ->
                 """
         # Usefull for API tags
         tags:
-            all:
+            list:
                 map: """
                 function (doc) {
                 var _ref;
@@ -320,3 +296,126 @@ module.exports.init = (callback) =>
                         callback()
         else
             callback null
+
+removeOldView = (designDoc, view, callback) ->
+    delete designDoc.views[view]
+    if Object.keys(designDoc.views).length is 0
+        db.remove designDoc._id, designDoc._rev, callback
+    else
+        db.merge designDoc._id, views: designDoc.views, callback
+
+
+exports.removeOldViews = (callback) ->
+    # TODOS : Remove old device view
+    # TODOS : on peut merger celle qui sont map/reduce & map seul, si on ajoute le paramètre ?reduce=false
+    count = 0
+    total = 0
+    viewAll 'application', (err, docs) ->
+        return callback err if err
+        apps = docs.map (app) -> return app.slug
+        db.all {startkey:"_design", endkey:"_design0", include_docs:true}, (err, designDocs) ->
+            async.forEachSeries designDocs, (designDoc, next) =>
+                designDoc = designDoc.doc
+                console.log '\n', designDoc._id
+                async.forEachSeries Object.keys(designDoc.views), (type, cb) =>
+                    total += 1
+                    console.log ' ->', type
+                    if type is 'all' or type is 'dball'
+                        removeOldView designDoc, type, () ->
+                            console.log '  -> REMOVE (all views)'
+                            count +=1
+                    else if type.indexOf('-') isnt -1
+                        console.log '  -> specific view for application'
+                        if type.split('-')[0] in apps
+                            if type.split('-')[1] is 'all'
+                                console.log '  -> REMOVE (all views)'
+                                count +=1
+                            else
+                                console.log '  -> check similarity with other'
+                                sharedView = designDoc.views[type.split('-')[1]].map.toString()
+                                appView = designDoc.views[type].map.toString()
+                                if appView.indexOf 'filter' isnt -1
+                                    appView = appView.replace 'filter = function (doc) {\n', ''
+                                    appView = appView.replace '};\n    filter(doc);\n', ''
+                                if sharedView.indexOf 'filter(doc)' isnt -1
+                                    sharedView = sharedView.replace 'filter = function (doc) {\n', ''
+                                    sharedView = sharedView.replace '};\n    filter(doc);\n', ''
+                                appView = appView.replace /\ /g, ''
+                                appView = appView.replace /\n/g, ''
+                                sharedView = sharedView.replace /\ /g, ''
+                                sharedView = sharedView.replace /\n/g, ''
+                                if sharedView.indexOf('doc.docType&&') isnt -1 or appView.indexOf('doc.docType&&') isnt -1
+                                    sharedView = sharedView.replace 'doc.docType&&', ''
+                                    appView = appView.replace 'doc.docType&&', ''
+                                    console.log 'Warning : docType check'
+                                if sharedView.indexOf('_') isnt -1 or appView.indexOf('_') isnt -1
+                                    sharedView = sharedView.replace /_/g, ''
+                                    appView = appView.replace /_/g, ''
+                                    console.log 'Warning : ___'
+                                if sharedView.indexOf('.toLowerCase') isnt -1 or appView.indexOf('.toLowerCase') isnt -1 
+                                    sharedView = sharedView.replace('.toLowerCase()', '').toLowerCase()
+                                    appView = appView.replace('.toLowerCase()', '').toLowerCase()
+                                    console.log 'Warning : docType toLowerCase'
+                                if sharedView.toString() is appView.toString()
+                                    count += 1
+                                    console.log '  -> REMOVE (same view)'
+                                else
+                                    console.log '  ->  ', sharedView
+                                    console.log '  ->  ', appView
+                                    console.log '  -> ????'
+
+                        else
+                            console.log 'remove : old application'
+                            count +=1
+                    else
+                        console.log '   -> OK'
+                    cb()
+                , next
+            , () ->
+                console.log 'END'
+                console.log "#{count}/#{total}"
+
+appIsInstalled = (currentApps, apps) ->
+    if currentApps.length > 0
+        app = currentApps.pop()
+        if app in apps
+            return true
+        else
+            return appIsInstalled currentApps, apps
+    else
+        return false
+
+exports.removeOldAppViews = (callback) ->
+    count = 0
+    total = 0
+    views = require('./viewsApp').views
+    viewAll 'application', (err, docs) ->
+        return callback err if err
+        apps = docs.map (app) -> return app.slug
+        apps.push "home"
+        apps.push "ds"
+        db.all {startkey:"_design", endkey:"_design0", include_docs:true}, (err, designDocs) ->
+            async.forEachSeries designDocs, (designDoc, next) =>
+                designDoc = designDoc.doc
+                console.log '\n', designDoc._id
+                async.forEachSeries Object.keys(designDoc.views), (type, cb) =>
+                    total += 1
+                    console.log ' ->', type
+                    docType = designDoc._id.replace('_design/', '')
+                    console.log type, docType
+                    if views[docType]?[type]?
+                        console.log views[docType][type]
+                        if appIsInstalled views[docType][type], apps
+                            console.log 'OK -> '
+                        else
+                            console.log 'FALSE -> '
+                            count += 1
+                    else
+                        console.log 'UNKONWN'
+                        count += 1
+                    cb()
+                , next
+            , () ->
+                console.log apps
+                console.log 'END'
+                console.log "#{count}/#{total}"

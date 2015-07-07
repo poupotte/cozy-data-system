@@ -5,6 +5,7 @@ CryptoTools = require('./crypto_tools')
 randomString = require('./random').randomString
 logger = require('printit')(prefix: 'lib/encryption')
 errors = require '../middlewares/errors'
+request = require './request'
 timeout = null
 
 User = require './user'
@@ -56,7 +57,7 @@ sendMailNow = ->
                 " retrieving user data from database:"
             logger.raw err
         else
-            db.view 'cozyinstance/all', (err, instance) ->
+            request.viewAll 'cozyinstance', (err, instance) ->
                 if instance?[0]?.value.domain?
                     domain = instance[0].value.domain
                 else

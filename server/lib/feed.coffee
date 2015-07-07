@@ -95,7 +95,7 @@ module.exports = class Feed
                         file = doc.binary[name]
                         binary = file.id
                         # Check if another file use this binary
-                        @db.view 'binary/byDoc', {key: binary}, (err, res) =>
+                        @db.view 'binary/bydoc', {key: binary}, (err, res) =>
                             if err
                                 callback err
 

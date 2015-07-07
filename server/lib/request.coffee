@@ -307,7 +307,7 @@ removeOldView = (designDoc, view, callback) ->
 
 exports.removeOldViews = (callback) ->
     # TODOS : Remove old device view
-    # TODOS : on peut merger celle qui sont map/reduce & map seul, si on ajoute le paramètre ?reduce=false
+    # TODOS : tasky-byorder / byorder (même vue mais avec 2 versions : garder byorder)
     count = 0
     total = 0
     viewAll 'application', (err, docs) ->
@@ -388,6 +388,7 @@ appIsInstalled = (currentApps, apps) ->
 exports.removeOldAppViews = (callback) ->
     count = 0
     total = 0
+    all = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
         return callback err if err
@@ -411,8 +412,11 @@ exports.removeOldAppViews = (callback) ->
                             console.log 'FALSE -> '
                             count += 1
                     else
-                        console.log 'UNKONWN'
-                        count += 1
+                        if type is 'all' or type is 'dball'
+                            all += 1
+                        else
+                            console.log 'UNKONWN'
+                            count += 1
                     cb()
                 , next
             , () ->

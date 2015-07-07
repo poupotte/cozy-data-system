@@ -75,7 +75,7 @@ exports.views =
         "bycalendar": ["calendar", "sync"]
         "byuri": ["sync"]
         "nbbyday": ["kyou"]
-    "favorite_tag":
+    "favoritetag":
         "allbyapp": ["tasky"]
         "byappbylabel": ["tasky"]
     "feed":

@@ -495,4 +495,6 @@ exports.removeOldAppViews = (callback) ->
                 console.log 'unknown: ', count
                 toRemove = all + count_similare + remove
                 console.log "to remove: ", toRemove
+                mount = toRemove + unknown
+                console.log "to remove with unknown: ", mount
                 console.log "total: ", total

@@ -8,7 +8,7 @@ exports.views =
         "bytitle": ["photos"]
     "all":
         "bydoctype": ["ds"]
-        "withoutDocType": ["ds"]
+        "withoutdoctype": ["ds"]
     "application":
         "byslug": ["home"]
         "getpermissions": ["databrowser"]

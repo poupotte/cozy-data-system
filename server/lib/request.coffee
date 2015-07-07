@@ -389,6 +389,7 @@ exports.removeOldAppViews = (callback) ->
     count = 0
     total = 0
     all = 0
+    remove = 0
     views = require('./viewsApp').views
     viewAll 'application', (err, docs) ->
         return callback err if err
@@ -410,7 +411,7 @@ exports.removeOldAppViews = (callback) ->
                             console.log 'OK -> '
                         else
                             console.log 'FALSE -> '
-                            count += 1
+                            remove += 1
                     else
                         if type is 'all' or type is 'dball'
                             all += 1
@@ -422,4 +423,7 @@ exports.removeOldAppViews = (callback) ->
             , () ->
                 console.log apps
                 console.log 'END'
-                console.log "#{count}/#{total}"
+                console.log 'remove: ', remove
+                console.log 'unknown: ', count
+                console.log 'all/dball: ', all
+                console.log "total: ", total

@@ -485,6 +485,8 @@ exports.removeOldAppViews = (callback) ->
                     cb()
                 , next
             , () ->
+                toRemove = all + count_similare + remove
+                mount =  all + count_similare + remove + unknown
                 console.log apps
                 console.log 'END'
                 console.log 'all/dball: ', all
@@ -493,8 +495,6 @@ exports.removeOldAppViews = (callback) ->
                 console.log 'similare', count_similare
                 console.log 'oldApp: ', remove
                 console.log 'unknown: ', count
-                toRemove = all + count_similare + remove
                 console.log "to remove: ", toRemove
-                mount =  all + count_similare + remove + unknown
                 console.log "to remove with unknown: ", mount
                 console.log "total: ", total

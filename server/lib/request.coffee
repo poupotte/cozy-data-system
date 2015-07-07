@@ -489,6 +489,8 @@ exports.removeOldAppViews = (callback) ->
                                             console.log type, docType
                                             if views[docType]?[type.split('-')[1]]?
                                                 console.log views[docType][type.split('-')[1]]
+                                                console.log views[docType]
+                                                console.log docType, type.split('-')[1]
                                                 if views[docType][type.split('-')[1]].length is 1
                                                     console.log 'KEEP specific view : not shared'
                                     else

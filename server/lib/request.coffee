@@ -494,6 +494,8 @@ exports.removeOldAppViews = (callback) ->
                                                 console.log docType, type.split('-')[1]
                                                 if views[docType][type.split('-')[1]].length is 1
                                                     keep_app +=1
+                                                    toRemove += 1
+                                                    mount += 1
                                                     console.log 'KEEP specific view : not shared'
                                     else
                                         duplicateUninstalled += 1
@@ -517,6 +519,6 @@ exports.removeOldAppViews = (callback) ->
                 console.log 'similare', count_similare
                 console.log 'oldApp: ', remove
                 console.log 'unknown: ', count
-                console.log "to remove: ", toRemove
+                console.log "to remove: (all + duplicateUninstalled + not_shared + similar + oldApp) ", toRemove
                 console.log "to remove with unknown: ", mount
                 console.log "total: ", total

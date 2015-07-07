@@ -500,9 +500,10 @@ exports.removeOldAppViews = (callback) ->
                                     lowerCase += 1
                                     toRemove += 1
                                     mount += 1
-                                console.log 'UNKONWN', type, docType
-                                count += 1
-                                mount += 1
+                                else
+                                    console.log type, docType
+                                    count += 1
+                                    mount += 1
                     cb()
                 , next
             , () ->

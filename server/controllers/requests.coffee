@@ -16,7 +16,6 @@ log = require('printit')
 # list all doctypes that have been created
 # a doctype is a design document with a "all" request
 module.exports.doctypes = (req, res, next) ->
-
     query = group: true
     out = []
 
@@ -83,9 +82,7 @@ module.exports.removeResults = (req, res, next) ->
     viewName = null
 
     delFunc = ->
-        console.log "delFunc"
         db.view viewName, options, (err, docs) ->
-            console.log "endRequest"
             if err
                 if err.error is "not_found"
                     next errors.http 404, "Request #{viewName} was not found"
@@ -101,11 +98,9 @@ module.exports.removeResults = (req, res, next) ->
                         next err
             else
                 if docs.length > 0
-                    console.log 'if'
                     # Put a timeout to give some breath because each doc
                     # deletion raises an event.
                     dbHelper.removeAll docs, ->
-                        console.log "removeAll"
                         setTimeout delFunc, 500
                 else
                     res.send 204, success: true
@@ -154,15 +149,21 @@ module.exports.definition = (req, res, next) ->
                 views = docs.views
                 request.create req.appName, req.params, views, req.body, \
                 (err, path) ->
-                    views[path] = req.body
-                    db.merge "_design/#{req.params.type}", views: views, \
-                    (err, response) ->
-                        if err
-                            console.log "[Definition] err: " + JSON.stringify err
-                            next err
-                        else
-                            res.send 200, success: true
-                            next()
+                    # TODOS : Check if view is similare
+                    #      * exactly same : send ok (don't create new version)
+                    if views[path] is req.body
+                        res.send 200, success: true
+                        next()
+                    else
+                        views[path] = req.body
+                        db.merge "_design/#{req.params.type}", views: views, \
+                        (err, response) ->
+                            if err
+                                console.log "[Definition] err: " + JSON.stringify err
+                                next err
+                            else
+                                res.send 200, success: true
+                                next()
 
 # DELETE /request/:type/:req_name
 module.exports.remove = (req, res, next) ->

@@ -25,7 +25,7 @@ module.exports.doctypes = function(req, res, next) {
     group: true
   };
   out = [];
-  return db.view("doctypes/all", query, function(err, docs) {
+  return db.view("all/bydoctype", query, function(err, docs) {
     if (err) {
       return next(err);
     } else {
@@ -43,7 +43,7 @@ module.exports.tags = function(req, res, next) {
     group: true
   };
   out = [];
-  return db.view("tags/all", query, function(err, docs) {
+  return db.view("tags/list", query, function(err, docs) {
     if (err) {
       return next(err);
     } else {
@@ -56,16 +56,31 @@ module.exports.tags = function(req, res, next) {
 };
 
 module.exports.results = function(req, res, next) {
+  if (req.params.req_name === 'all') {
+    req.body.startkey = req.params.type;
+    req.body.endkey = req.params.type;
+    req.body['include_docs'] = true;
+    req.body.reduce = false;
+    req.params.type = 'all';
+  }
   return request.get(req.appName, req.params, function(path) {
     return db.view((req.params.type + "/") + path, req.body, function(err, docs) {
+      var doc, i, len;
+      if ((req.params.type + "/") + path === "all/bydoctype") {
+        for (i = 0, len = docs.length; i < len; i++) {
+          doc = docs[i];
+          doc.value = doc.doc;
+          delete doc.doc;
+        }
+      }
       if (err) {
         log.error(err);
         return next(err);
       } else if (util.isArray(docs)) {
         docs.forEach(function(value) {
-          var error, password;
+          var error, password, ref;
           delete value._rev;
-          if ((value.password != null) && !((value.docType != null) && (value.docType.toLowerCase() === "application" || value.docType.toLowerCase() === "user"))) {
+          if ((value.password != null) && !(((ref = value.docType) != null ? ref.toLowerCase() : void 0) === "user")) {
             try {
               password = encryption.decrypt(value.password);
             } catch (_error) {
@@ -120,36 +135,38 @@ module.exports.removeResults = function(req, res, next) {
   };
   return request.get(req.appName, req.params, function(path) {
     viewName = req.params.type + "/" + path;
+    if (req.params.req_name === 'all') {
+      viewName = "all/bydoctype";
+      options.startkey = req.params.type;
+      options.endkey = req.params.type;
+      options['include_docs'] = true;
+      options.reduce = false;
+    }
     return delFunc();
   });
 };
 
 module.exports.definition = function(req, res, next) {
-  return db.get("_design/" + req.params.type, function(err, docs) {
-    var design_doc, views;
-    if (err && err.error === 'not_found') {
-      design_doc = {};
-      design_doc[req.params.req_name] = req.body;
-      return db.save("_design/" + req.params.type, design_doc, function(err, response) {
-        if (err) {
-          console.log("[Definition] err: " + JSON.stringify(err));
-          return next(err);
-        } else {
-          res.send(200, {
-            success: true
-          });
-          return next();
-        }
+  var emit, err, index;
+  if (req.params.req_name === 'all') {
+    index = req.body.map.indexOf('emit');
+    emit = req.body.map.substring(index, index + 12);
+    if (emit === 'emit(doc._id') {
+      return res.send(200, {
+        succeess: true
       });
-    } else if (err) {
-      return next(err);
     } else {
-      views = docs.views;
-      return request.create(req.appName, req.params, views, req.body, function(err, path) {
-        views[path] = req.body;
-        return db.merge("_design/" + req.params.type, {
-          views: views
-        }, function(err, response) {
+      err = new Error('All view should emit doc._id');
+      err.status = 400;
+      return next(err);
+    }
+  } else {
+    return db.get("_design/" + req.params.type, function(err, docs) {
+      var design_doc, views;
+      if (err && err.error === 'not_found') {
+        design_doc = {};
+        design_doc[req.params.req_name] = req.body;
+        return db.save("_design/" + req.params.type, design_doc, function(err, response) {
           if (err) {
             console.log("[Definition] err: " + JSON.stringify(err));
             return next(err);
@@ -160,9 +177,36 @@ module.exports.definition = function(req, res, next) {
             return next();
           }
         });
-      });
-    }
-  });
+      } else if (err) {
+        return next(err);
+      } else {
+        views = docs.views;
+        return request.create(req.appName, req.params, views, req.body, function(err, path) {
+          if (views[path] === req.body) {
+            res.send(200, {
+              success: true
+            });
+            return next();
+          } else {
+            views[path] = req.body;
+            return db.merge("_design/" + req.params.type, {
+              views: views
+            }, function(err, response) {
+              if (err) {
+                console.log("[Definition] err: " + JSON.stringify(err));
+                return next(err);
+              } else {
+                res.send(200, {
+                  success: true
+                });
+                return next();
+              }
+            });
+          }
+        });
+      }
+    });
+  }
 };
 
 module.exports.remove = function(req, res, next) {

@@ -116,7 +116,7 @@ module.exports.remove = function(req, res, next) {
       delete req.doc.binary;
     }
     return db.save(req.doc, function(err) {
-      return db.view('binary/byDoc', {
+      return db.view('binary/bydoc', {
         key: id
       }, (function(_this) {
         return function(err, result) {

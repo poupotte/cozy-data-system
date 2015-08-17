@@ -41,6 +41,7 @@ module.exports.create = (app, req, views, newView, callback) =>
     if productionOrTest
         # If classic view already exists and view is different :
         # store in app-req.req_name
+        # TODOS : use isSimilar
         if views?[req.req_name]? and
                 JSON.stringify(views[req.req_name]) isnt JSON.stringify(newView)
             storeRam "#{app}-#{req.req_name}"

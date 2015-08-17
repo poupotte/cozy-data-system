@@ -11,6 +11,6 @@ module.exports = class User
                 callback err
             else
                 if res.length > 0
-                    callback null, res[0].value
+                    callback null, res[0].doc
                 else
                     callback new Error("No user found")

@@ -136,7 +136,7 @@ module.exports = Feed = (function() {
               var binary, file;
               file = doc.binary[name];
               binary = file.id;
-              return _this.db.view('binary/byDoc', {
+              return _this.db.view('binary/bydoc', {
                 key: binary
               }, function(err, res) {
                 if (err) {

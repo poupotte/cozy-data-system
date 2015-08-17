@@ -24,10 +24,17 @@ exports.remove = (function(_this) {
 exports.removeAll = (function(_this) {
   return function(docs, callback) {
     var deletedDocs, doc, i, len;
+    console.log(docs);
     deletedDocs = [];
     for (i = 0, len = docs.length; i < len; i++) {
       doc = docs[i];
-      deletedDocs.push(getDeletedDoc(doc.value));
+      if (doc.doc != null) {
+        doc = doc.doc;
+      } else {
+        doc = doc.value;
+      }
+      console.log(doc);
+      deletedDocs.push(getDeletedDoc(doc));
     }
     return db.save(deletedDocs, callback);
   };

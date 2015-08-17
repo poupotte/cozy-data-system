@@ -73,7 +73,11 @@ describe "Account handling tests", ->
                 @cozyPwd = "password"
                 data = password: @cozyPwd
                 client.setBasicAuth "proxy", "token"
+                console.log data
                 client.post 'accounts/password/', data, (err, res, body) =>
+                    console.log err
+                    console.log res.statusCode
+                    console.log body
                     @res = res
                     done()
 

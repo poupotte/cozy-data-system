@@ -81,7 +81,8 @@ describe "Token of applications handling tests", ->
 
             it "And Access is created", (done)->
                 client.setBasicAuth "test-app", 'secret'
-                client.post "request/access/byApp/", key: @body._id, (err, res, body) ->
+                client.post "request/access/byapp/", key: @body._id, (err, res, body) ->
+                    console.log body
                     access = body[0].value
                     access.docType.should.equal 'Access'
                     access.token.should.equal 'token'
@@ -198,7 +199,7 @@ describe "Token of applications handling tests", ->
             it "And Access is created", (done)->
                 client.setBasicAuth "test-app", 'secret'
                 console.log @body._id
-                client.post "request/access/byApp/", key:@body._id, (err, res, body) ->
+                client.post "request/access/byapp/", key:@body._id, (err, res, body) ->
                     access = body[0].value
                     access.docType.should.equal 'Access'
                     access.token.should.equal 'token-3'

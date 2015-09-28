@@ -32,7 +32,7 @@ checkDiskSpace = ->
                     type: ""
                     publishDate: Date.now()
                 db.save doc, (err, doc) ->
-                    console.log err if err?
+                    log.error err if err?
         else
             isEnough = true
             percentage = 100 * percentage
@@ -44,7 +44,7 @@ checkDiskSpace = ->
                             # Notification already exists
                             doc.text = "WARNING: You have already used #{Math.round(percentage)}% of Cozy space."
                             return db.save doc, (err, doc) ->
-                                console.log err if err?
+                                log.error err if err?
                     # Create a new notification
                     doc =
                         ref: 'warning_ds'
@@ -54,7 +54,7 @@ checkDiskSpace = ->
                         type: "permanent"
                         publishDate: Date.now()
                     db.save doc, (err, doc) ->
-                        console.log err if err?
+                        log.error err if err?
 
 # Initialize loop to check disk space
 module.exports.init = () ->

@@ -17,9 +17,9 @@ COUNT_TIME = 5 * MINUTE
 
 
 # Check disk space
-checkDiskSpace = () ->
+checkDiskSpace = ->
     db.get '', (err, database) ->
-        pourcentage = database.data_size/quota
+        percentage = database.data_size/quota
         if database.data_size > quota
             if isEnough
                 # TODOS: Display a pop-up !!!
@@ -35,21 +35,21 @@ checkDiskSpace = () ->
                     console.log err if err?
         else
             isEnough = true
-            pourcentage = 100 * pourcentage
-            if pourcentage > warning
+            percentage = 100 * percentage
+            if percentage > warning
                 db.view 'notification/all', (err, docs) ->
                     for doc in docs
                         doc = doc.value
                         if doc.ref = 'warning_ds'
                             # Notification already exists
-                            doc.text = "WARNING : You have already use #{Math.round(pourcentage)}% of Cozy size."
+                            doc.text = "WARNING: You have already used #{Math.round(percentage)}% of Cozy space."
                             return db.save doc, (err, doc) ->
                                 console.log err if err?
                     # Create a new notification
                     doc =
                         ref: 'warning_ds'
                         app: 'home'
-                        text: "WARNING : You have already use #{Math.round(pourcentage)}% of Cozy size."
+                        text: "WARNING: You have already used #{Math.round(percentage)}% of Cozy space."
                         docType: "Notification"
                         type: "permanent"
                         publishDate: Date.now()

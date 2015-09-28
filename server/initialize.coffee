@@ -5,6 +5,8 @@ module.exports = (app, server, callback) ->
     feed = require './lib/feed'
     feed.initialize server
 
+    disk = require './lib/disk_space'
+    disk.init()
     init = require './lib/init'
     init.removeDocWithoutDocType (err) ->
         log.error err if err?

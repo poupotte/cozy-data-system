@@ -11,6 +11,7 @@ user = require './user'
 account = require './accounts'
 access = require './access'
 replication = require './replication'
+disk = require('../lib/disk_space')
 
 utils = require '../middlewares/utils'
 
@@ -22,6 +23,7 @@ module.exports =
     # Data management
     'data/': post: [
             utils.checkPermissionsByBody
+            disk.check
             data.encryptPassword
             data.create
         ]
@@ -34,6 +36,7 @@ module.exports =
         ]
         post: [
             utils.checkPermissionsByBody
+            disk.check
             data.encryptPassword
             data.create
         ]
@@ -41,6 +44,7 @@ module.exports =
             utils.lockRequest
             utils.checkPermissionsByBody
             utils.getDoc
+            disk.check
             data.encryptPassword
             data.update
             utils.unlockRequest
@@ -49,6 +53,7 @@ module.exports =
             utils.lockRequest
             utils.getDoc
             utils.checkPermissionsByDoc
+            disk.addWrite
             data.delete
             utils.unlockRequest
         ]
@@ -56,6 +61,7 @@ module.exports =
     'data/upsert/:id/': put: [
         utils.lockRequest
         utils.checkPermissionsByBody
+        disk.check
         data.encryptPassword
         data.upsert
         utils.unlockRequest
@@ -63,6 +69,7 @@ module.exports =
     'data/merge/:id/': put: [
         utils.lockRequest
         utils.checkPermissionsByBody
+        disk.check
         utils.getDoc
         utils.checkPermissionsByDoc
         data.encryptPassword
@@ -76,12 +83,14 @@ module.exports =
         put: [
             utils.checkPermissionsByType
             utils.lockRequest
+            disk.check
             requests.definition
             utils.unlockRequest
         ]
         delete: [
             utils.checkPermissionsByType
             utils.lockRequest
+            disk.addWrite
             requests.remove
             utils.unlockRequest
         ]
@@ -102,6 +111,7 @@ module.exports =
         utils.lockRequest
         utils.getDoc
         utils.checkPermissionsByDoc
+        disk.check
         attachments.add
         utils.unlockRequest
     ]
@@ -111,6 +121,7 @@ module.exports =
             utils.lockRequest
             utils.getDoc
             utils.checkPermissionsByDoc
+            disk.addWrite
             attachments.remove
             utils.unlockRequest
         ]
@@ -127,6 +138,7 @@ module.exports =
         utils.lockRequest
         utils.getDoc
         utils.checkPermissionsByDoc
+        disk.check
         binaries.add
         utils.unlockRequest
     ]
@@ -136,6 +148,7 @@ module.exports =
             utils.lockRequest
             utils.getDoc
             utils.checkPermissionsByDoc
+            disk.addWrite
             binaries.remove
             utils.unlockRequest
         ]
@@ -145,13 +158,16 @@ module.exports =
     'connectors/bank/:name/history': post: connectors.bankHistory
 
     # Access management
-    'access/': post: [utils.checkPermissionsFactory('access'), access.create]
+    'access/': post: [utils.checkPermissionsFactory('access'), 
+            disk.check, access.create]
     'access/:id/':
-        'put': [utils.checkPermissionsFactory('access'), access.update]
+        'put': [utils.checkPermissionsFactory('access'), 
+            disk.check, access.update]
         'delete': [
             utils.checkPermissionsFactory('access')
             utils.lockRequest
             utils.getDoc
+            disk.addWrite
             access.remove
             utils.unlockRequest
         ]
@@ -159,6 +175,7 @@ module.exports =
     'replication/*':
         'post': [
             utils.checkPermissionsPostReplication
+            disk.check
             replication.proxy
         ]
         'get': [
@@ -167,6 +184,7 @@ module.exports =
         ]
         'put':[
             utils.checkPermissionsPutReplication
+            disk.check
             replication.proxy
         ]
 
@@ -207,10 +225,12 @@ module.exports =
     ]
 
     #User management
-    'user/': post: [utils.checkPermissionsFactory('User'), user.create]
+    'user/': post: [utils.checkPermissionsFactory('User'), 
+            disk.check, user.create]
     'user/merge/:id': put: [
         utils.lockRequest
         utils.checkPermissionsFactory('User')
+        disk.check
         utils.getDoc
         user.merge
         utils.unlockRequest

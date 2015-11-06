@@ -72,6 +72,8 @@ module.exports.checkPermissionsPostReplication = (req, res, next) ->
                 #   Get doc and check docType of current document
                 db.get doc._id, (err, doc) ->
                     checkPermissions req, doc.docType, cb
+            else if doc._id?.indexOf('_local') is 0
+                next()
             else
                 # Manage in request
                 checkPermissions req, doc.docType, cb

@@ -73,10 +73,13 @@ module.exports.checkPermissionsPostReplication = function(req, res, next) {
     return next();
   } else if (req.url === '/replication/_bulk_docs') {
     return async.forEach(req.body.docs, function(doc, cb) {
+      var ref;
       if (doc._deleted) {
         return db.get(doc._id, function(err, doc) {
           return checkPermissions(req, doc.docType, cb);
         });
+      } else if (((ref = doc._id) != null ? ref.indexOf('_local') : void 0) === 0) {
+        return next();
       } else {
         return checkPermissions(req, doc.docType, cb);
       }

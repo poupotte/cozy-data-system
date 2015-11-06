@@ -51,7 +51,6 @@ module.exports.results = (req, res, next) ->
                 next err
             else if util.isArray(docs)
                 docs.forEach (value) ->
-                    delete value._rev # CouchDB specific, user don't need it
                     if value.password? and not (
                         (value.docType? and
                         (value.docType.toLowerCase() is "application" or

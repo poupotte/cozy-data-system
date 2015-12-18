@@ -161,6 +161,12 @@ module.exports =
             utils.unlockRequest
         ]
 
+    # Use for local document
+    'replication/_*':
+        'get': [
+            replication.proxy
+        ]
+
     # Get attachment in a replication
     'replication/:id/:name*':
         'get': [
